@@ -7,10 +7,7 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
-import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -21,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import io.samotek.ipldashboard.model.Match;
 import io.samotek.ipldashboard.model.MatchInput;
@@ -72,9 +68,9 @@ public class BatchConfig {
     }
 
     @Bean
-    public Job importUserJob(JobRepository jobRepository,
-            JobCompletionNotificationListener listener, Step step1) {
-        return new JobBuilder("importUserJob", jobRepository)
+    public Job importUserJob(JobCompletionNotificationListener listener, Step step1) {
+        return jobBuilderFactory
+                .get("importUserJob")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
                 .flow(step1)
@@ -83,10 +79,10 @@ public class BatchConfig {
     }
 
     @Bean
-    public Step step1(JobRepository jobRepository,
-            PlatformTransactionManager transactionManager, JdbcBatchItemWriter<Match> writer) {
-        return new StepBuilder("step1", jobRepository)
-                .<MatchInput, Match>chunk(10, transactionManager)
+    public Step step1(JdbcBatchItemWriter<Match> writer) {
+        return stepBuilderFactory
+                .get("step1")
+                .<MatchInput, Match>chunk(10)
                 .reader(reader())
                 .processor(processor())
                 .writer(writer)
