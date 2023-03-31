@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import './App.css'
 import { TeamPage } from './pages/TeamPage'
 
@@ -9,7 +10,11 @@ function App() {
 
   return (
     <div className="App">
-      <TeamPage />
+      <Router>
+        <Routes>
+          <Route path="/teams/:teamName" element={<TeamPage />} />
+        </Routes>
+      </Router>
     </div>
   )
 }
